@@ -94,13 +94,20 @@ def train_model():
     model_choice = int(input("enter your choice "))
 
     if model_choice == 1:
-    # Creates a Knn Classifier Object with k=1
+     # Creates a Knn Classifier Object with k=1
        k = int(input("enter the desired K value (recommended is 6) "))
        model = KNeighborsClassifier(n_neighbors=k) 
-
-    # Trains this Knn Classifier with the training set obtained previously:
+     # Trains this Knn Classifier with the training set obtained previously:
        model.fit(strat_feat_train, strat_classes_train)
-
+       #Obtains the predictions from the kNN classifier:
+       predictions = model.predict(strat_feat_test)
+       # printss
+       input("enter to con")
+       print("------ model evaluations ------")
+       print("Accuracy:", accuracy_score(strat_classes_test, predictions))
+     #Prints the classification report:
+       print ("\n------classification report------")
+       print(classification_report(strat_classes_test, predictions))
     elif model_choice == 2:
      max_depth = input("Enter max depth (press Enter for default): ").strip()
      if max_depth:
@@ -108,26 +115,9 @@ def train_model():
         model = DecisionTreeClassifier(max_depth=max_depth, random_state=10)
      else:
         model = DecisionTreeClassifier(random_state=10)
-    
     else:
         print("Invalid choice!")
     return
-
-
-    
-    
-# Obtains the predictions from the kNN classifier:
-    predictions = model.predict(strat_feat_test)
-
-# printss
-    input("enter to con")
-    print("------ model evaluations ------")
-    print("Accuracy:", accuracy_score(strat_classes_test, predictions))
-#Prints the classification report:
-    print ("\n------classification report------")
-    print(classification_report(strat_classes_test, predictions))
-
-
 
 def evaluate_model():
     pass
