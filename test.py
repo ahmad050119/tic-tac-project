@@ -108,13 +108,27 @@ def train_model():
      #Prints the classification report:
        print ("\n------classification report------")
        print(classification_report(strat_classes_test, predictions))
+    
     elif model_choice == 2:
-     max_depth = input("Enter max depth (press Enter for default): ").strip()
-     if max_depth:
-        max_depth = int(max_depth)
-        model = DecisionTreeClassifier(max_depth=max_depth, random_state=10)
-     else:
-        model = DecisionTreeClassifier(random_state=10)
+        max_depth = input("Enter max depth (press Enter for default): ").strip()
+        
+        if max_depth:
+            max_depth = int(max_depth)
+            model = DecisionTreeClassifier(max_depth=max_depth, random_state=10)
+        else:
+            model = DecisionTreeClassifier(random_state=10)
+     
+        model.fit(strat_feat_train, strat_classes_train)
+        predictions = model.predict(strat_feat_test)
+
+        input("press Enter to continue...")
+        print("------ model evaluations ------")
+        print("Accuracy:", accuracy_score(strat_classes_test, predictions))
+        print("\n------ classification report ------")
+        print(classification_report(strat_classes_test, predictions))
+        print("\n------ confusion matrix ------")
+        print(confusion_matrix(strat_classes_test, predictions))
+
     else:
         print("Invalid choice!")
     return
