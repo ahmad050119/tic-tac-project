@@ -120,7 +120,29 @@ def evaluate_model():
     pass
 
 def simulate():
-    pass
+    global df, model, features, classes
+    if model is None:
+        print ("train a model first!!")
+        return
+    if model == "tic-tac-toe":
+        print("enter x for player X and o for player O and b for blank")
+    else:
+        print("enter the feature values")
+    input_features = [] 
+    for col in features.columns:
+        value = input(f"enter value for {col}: ")
+        input_features.append(value)
+    # Convert input features to DataFrame
+    input_df = pd.DataFrame([input_features], columns=features.columns) 
+    # Encode input features
+    coder = LabelEncoder()
+    coder_input = input_df.apply(lambda col: LabelEncoder().fit_transform(col))
+    # Make prediction
+    prediction = model.predict(coder_input)
+    print("Predicted class:", prediction[0])
+    
+
+    
 
 if __name__ == "__main__":
     main_menu()
