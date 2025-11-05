@@ -34,7 +34,7 @@ class app:
             if choice == 5:
                 break
             else:
-               print ('try again with (1/5)')
+               pass
 
     def load_data(self):
     #call the varaibles
