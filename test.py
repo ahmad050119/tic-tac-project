@@ -1,5 +1,3 @@
-#hhh
-# ADJGPOSJGSL
 import abc  as ABC
 import pandas as pd
 from sklearn.model_selection import train_test_split
@@ -8,9 +6,6 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import LabelEncoder
 from sklearn.tree import DecisionTreeClassifier
-
-
-
 
 class app:
     def __init__(self):
@@ -38,18 +33,21 @@ class app:
                 self.simulate()
             if choice == 5:
                 break
+            else:
+               print ('try again with (1/5)')
 
     def load_data(self):
     #call the varaibles
-      print ("iris csv is available")
-      print("tic is available")
+      print ("1: for iris dataset (already available)")
+      print("2: for tic-tac-toe dataset (already available)")
+      print("3: for your own dataset")
     #ask for dataset
-      data_name = input("enter the dataset name! ").strip()
+      data_choice = int(input("enter the dataset choice! "))
 
-      if data_name == 'iris':
+      if data_choice == 1:
         self.df = pd.read_csv("iris.csv")   
 
-      elif data_name == 'tic':
+      elif data_choice == 2:
         # since the dataset has no columns it has to be identified 
         self.df = pd.read_csv("tic-tac-toe.data", header=None)
         # manually assingned column names since the data set has none 
@@ -59,14 +57,22 @@ class app:
             "bottom-left", "bottom-middle", "bottom-right",
             "class"
         ]
-      else:
+      elif data_choice == 3:
+       own_data = input ('paste in your dataset-path ')
+       #convert path to be readeable
+       own_data = own_data.strip().strip('"').strip("'")
+       own_data = own_data.replace("\\", "/")    
+
        try:
-         self.df == pd.read_csv(data_name, header=None)
-         #  check if dataset has columns, if not try to assign default names
-         if self.df.columns.empty:
-           self.df.columns = [f"feature_{i}" for i in range(self.df.shape[1]-1)] + ["class"]
-       except ValueError:
-         return print(" your dataset could not be read, try again!!")
+         self.df = pd.read_csv(own_data)
+         self.df.rename(columns={self.df.columns[-1]: "class"}, inplace = True)
+       except Exception as e:
+        print(" your dataset could not be loaded, try again!!")
+        print('error', e)
+        return
+      else:
+          print('invalid choice!! ')
+          return
 # seperates the target class
       self.classes = self.df["class"]
 #seperates the futures
@@ -88,9 +94,16 @@ class app:
     # now apply it to the class too (aka "positive", "negative")
      coder_classes = LabelEncoder().fit_transform(self.classes)
     
+    # make sure every class appears rwice, otherwise abort "stratify"
+     class_count = pd.Series(coder_classes).value_counts() # this variable counts how many samples each class has
+     if (class_count < 2).any(): # this checks if any of the classes has less than 2 sampables 
+        stratify_parm = None  # disable stratification 
+     else:
+        stratify_parm = coder_classes 
+        
     # Split the data into STRATIFIED train/test sets:
      strat_feat_train, strat_feat_test, strat_classes_train, strat_classes_test = train_test_split(
-      coder_features, coder_classes, test_size=0.4, random_state=10, stratify= coder_classes )
+      coder_features, coder_classes, test_size=0.4, random_state=10, stratify= stratify_parm )
     #added coder. to features and classes so the the encoded version of them gets trained
 
      print ("choose a model\n""1. for KNN\n""2. for Decision Tree\n")
@@ -115,35 +128,41 @@ class app:
     
     # Trains model assifier with the training set obtained previously:
      self.model.fit(strat_feat_train, strat_classes_train)
+
        #Obtains the predictions from the model classifier:
      predictions = self.model.predict(strat_feat_test)
+     self.acc = accuracy_score(strat_classes_test, predictions)
+     self.report = classification_report(strat_classes_test, predictions)
+     self.matrix = confusion_matrix(strat_classes_test, predictions)
 
-    # printss
-     acc = accuracy_score(strat_classes_test, predictions)
-     report = classification_report(strat_classes_test, predictions)
-     matrix = confusion_matrix(strat_classes_test, predictions)
-     input("enter to con")
-     print("------ model evaluations ------")
-     print("Accuracy:", acc)
-     #Prints the classification report:
-     print ("\n------classification report------")
-     print(report)
+     #Prints accuracy
+     print("Accuracy:", self.acc)
     
     def evaluate_model(self):
      if self.model is None:
         print("Train a model first!!")
         return
+     
+     #prints
+     print("------ model evaluations ------")
+     print("Accuracy:", self.acc)
+     print ("\n------classification report------")
+     print(self.report)
+     print ("\n------Confusion Matrix------")
+     print(self.matrix)
 
      save_choice = input("\nDo you want to save these results to a file? (y/n): ").strip().lower()
      if save_choice == "y":
-        file_name = input("Enter file name (e.g., results.txt): ").strip()
+        file_name = input("Enter file name ").strip()
+        if not file_name.endswith(".txt"):
+         file_name += ".txt"
         with open(file_name, "w") as f:
             f.write("------ Model Evaluation Results ------\n")
-            f.write(f"Accuracy: {acc:.4f}\n\n")
+            f.write(f"Accuracy: {self.acc:.4f}\n\n")
             f.write("Classification Report:\n")
-            f.write(report + "\n")
+            f.write(self.report + "\n")
             f.write("Confusion Matrix:\n")
-            f.write(str(matrix) + "\n")
+            f.write(str(self.matrix) + "\n")
         print(f"Results saved successfully to '{file_name}'")
      else:
         print("Results not saved.")
@@ -163,17 +182,12 @@ class app:
     # Convert input features to DataFrame
       input_df = pd.DataFrame([input_features], columns=self.features.columns) 
     # Encode input features
-      coder = LabelEncoder()
+      self.coder = LabelEncoder()
       coder_input = input_df.apply(lambda col: LabelEncoder().fit_transform(col))
     # Make prediction
       prediction = self.model.predict(coder_input)
       print("Predicted class:", prediction[0])
 
-
-
-
-
-    
 if __name__ == "__main__":
     app_instance = app()
     app_instance.main_menu()
