@@ -9,6 +9,7 @@ from sklearn.preprocessing import LabelEncoder
 from sklearn.tree import DecisionTreeClassifier
 
 
+
 #variabbles
 df = None
 model = None
@@ -130,7 +131,53 @@ def train_model():
 
 
 def evaluate_model():
-    pass
+    global df, model, features, classes
+    if model is None:
+        print("Train a model first!!")
+        return
+
+    choice = input("Do you want to load a specific file for evaluation? (y/n): ").strip().lower()
+    if choice == "y":
+        file_path = input("Enter the file path: ").strip()
+        eval_df = pd.read_csv(file_path)
+        eval_features = eval_df.drop("class", axis=1)
+        eval_classes = eval_df["class"]
+    else:
+        eval_features = features
+        eval_classes = classes
+
+    coder_features = eval_features.apply(lambda col: LabelEncoder().fit_transform(col))
+    coder_classes = LabelEncoder().fit_transform(eval_classes)
+
+    feat_train, feat_test, class_train, class_test = train_test_split(
+        coder_features, coder_classes, test_size=0.3, random_state=10, stratify=coder_classes)
+
+    predictions = model.predict(feat_test)
+    acc = accuracy_score(class_test, predictions)
+    report = classification_report(class_test, predictions)
+    matrix = confusion_matrix(class_test, predictions)
+
+    print("\n------ Evaluation Results ------")
+    print(f"Accuracy: {acc:.4f}")
+    print("\nClassification Report:")
+    print(report)
+    print("\nConfusion Matrix:")
+    print(matrix)
+
+    # ⬇️ Your existing save_choice block (no changes, just moved here)
+    save_choice = input("\nDo you want to save these results to a file? (y/n): ").strip().lower()
+    if save_choice == "y":
+        file_name = input("Enter file name (e.g., results.txt): ").strip()
+        with open(file_name, "w") as f:
+            f.write("------ Model Evaluation Results ------\n")
+            f.write(f"Accuracy: {acc:.4f}\n\n")
+            f.write("Classification Report:\n")
+            f.write(report + "\n")
+            f.write("Confusion Matrix:\n")
+            f.write(str(matrix) + "\n")
+        print(f"Results saved successfully to '{file_name}'")
+    else:
+        print("Results not saved.")
 
 def simulate():
     global df, model, features, classes
@@ -153,6 +200,8 @@ def simulate():
     # Make prediction
     prediction = model.predict(coder_input)
     print("Predicted class:", prediction[0])
+
+
     
 
     
