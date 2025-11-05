@@ -50,7 +50,7 @@ def load_data():
         df = pd.read_csv("iris.csv")   
 
     elif data_name == 'tic':
-        # since the dataset has no headers it has to be identified 
+        # since the dataset has no columns it has to be identified 
         df = pd.read_csv("tic-tac-toe.data", header=None)
         # manually assingned column names since the data set has none 
         df.columns = [
@@ -61,7 +61,13 @@ def load_data():
         ]
 
     else:
-       return print(" try again!!")
+       try:
+         df == pd.read_csv(data_name, header=None)
+         #  check if dataset has columns, if not try to assign default names
+         if df.columns.empty:
+           df.columns = [f"feature_{i}" for i in range(df.shape[1]-1)] + ["class"]
+       except ValueError:
+         return print(" your dataset could not be read, try again!!")
         
 
 # seperates the target class
@@ -90,44 +96,40 @@ def train_model():
     strat_feat_train, strat_feat_test, strat_classes_train, strat_classes_test = train_test_split(
      coder_features, coder_classes, test_size=0.4, random_state=10, stratify= coder_classes )
     #added coder. to features and classes so the the encoded version of them gets trained
-    print ("choose a model\n""1. for KNN\n""2. for Decision Tree\n")
 
+    print ("choose a model\n""1. for KNN\n""2. for Decision Tree\n")
     model_choice = int(input("enter your choice "))
 
     if model_choice == 1:
-    # Creates a Knn Classifier Object with k=1
+     # Creates a Knn Classifier Object with k=1
        k = int(input("enter the desired K value (recommended is 6) "))
        model = KNeighborsClassifier(n_neighbors=k) 
-
-    # Trains this Knn Classifier with the training set obtained previously:
-       model.fit(strat_feat_train, strat_classes_train)
-
+    # creates a Decision Tree Classifier Object
     elif model_choice == 2:
-     max_depth = input("Enter max depth (press Enter for default): ").strip()
-     if max_depth:
-        max_depth = int(max_depth)
-        model = DecisionTreeClassifier(max_depth=max_depth, random_state=10)
-     else:
-        model = DecisionTreeClassifier(random_state=10)
-    
+        max_depth = input("Enter max depth (press Enter for default): ").strip()
+        
+        if max_depth:
+            max_depth = int(max_depth)
+            model = DecisionTreeClassifier(max_depth=max_depth, random_state=10)
+        else:
+            model = DecisionTreeClassifier(random_state=10)
     else:
         print("Invalid choice!")
-    return
-
-
+        return
     
-    
-# Obtains the predictions from the kNN classifier:
+    # Trains model assifier with the training set obtained previously:
+    model.fit(strat_feat_train, strat_classes_train)
+       #Obtains the predictions from the model classifier:
     predictions = model.predict(strat_feat_test)
 
-# printss
+    # printss
     input("enter to con")
     print("------ model evaluations ------")
     print("Accuracy:", accuracy_score(strat_classes_test, predictions))
-#Prints the classification report:
+     #Prints the classification report:
     print ("\n------classification report------")
     print(classification_report(strat_classes_test, predictions))
-
+    
 
 
 def evaluate_model():
@@ -203,8 +205,5 @@ def simulate():
 
 
     
-
-    
-
 if __name__ == "__main__":
     main_menu()
