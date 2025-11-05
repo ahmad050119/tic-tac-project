@@ -49,7 +49,7 @@ def load_data():
         df = pd.read_csv("iris.csv")   
 
     elif data_name == 'tic':
-        # since the dataset has no headers it has to be identified 
+        # since the dataset has no columns it has to be identified 
         df = pd.read_csv("tic-tac-toe.data", header=None)
         # manually assingned column names since the data set has none 
         df.columns = [
@@ -60,7 +60,13 @@ def load_data():
         ]
 
     else:
-       return print(" try again!!")
+       try:
+         df == pd.read_csv(data_name, header=None)
+         #  check if dataset has columns, if not try to assign default names
+         if df.columns.empty:
+           df.columns = [f"feature_{i}" for i in range(df.shape[1]-1)] + ["class"]
+       except ValueError:
+         return print(" your dataset could not be read, try again!!")
         
 
 # seperates the target class
