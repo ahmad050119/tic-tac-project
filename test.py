@@ -88,11 +88,17 @@ class app:
         return
          # encode the strings to numbers for KNN to work
     #creates a coder object 
-     coder = LabelEncoder()
+     self.coders = {} # encoder dictionary 
+     #coder = LabelEncoder()
     # apply it to all the features (aka "X", "o","b") into ints, (1,2,3)
-     coder_features = self.features.apply(lambda col: LabelEncoder().fit_transform(col))
+     coder_features = self.features.copy()
+     for col in coder_features.columns:
+        coder = LabelEncoder()
+        coder_features[col] = coder.fit_transform(coder_features[col])
+        self.coders[col] = coder  # store the encoder for each column
     # now apply it to the class too (aka "positive", "negative")
-     coder_classes = LabelEncoder().fit_transform(self.classes)
+     self.class_coder = LabelEncoder()
+     coder_classes = self.class_coder.fit_transform(self.classes)
     
     # make sure every class appears rwice, otherwise abort "stratify"
      class_count = pd.Series(coder_classes).value_counts() # this variable counts how many samples each class has
@@ -182,11 +188,14 @@ class app:
     # Convert input features to DataFrame
       input_df = pd.DataFrame([input_features], columns=self.features.columns) 
     # Encode input features
-      self.coder = LabelEncoder()
-      coder_input = input_df.apply(lambda col: LabelEncoder().fit_transform(col))
+      coder_input = input_df.copy()
+      for col in coder_input.columns:
+         coder = self.coders[col]
+         coder_input[col] = coder.transform(coder_input[col])
     # Make prediction
       prediction = self.model.predict(coder_input)
-      print("Predicted class:", prediction[0])
+      predicted_class = self.class_coder.inverse_transform(prediction)[0] # decode the predicted class
+      print("Predicted class:", predicted_class)
 
 if __name__ == "__main__":
     app_instance = app()
