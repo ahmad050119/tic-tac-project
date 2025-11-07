@@ -1,4 +1,3 @@
-import abc  as ABC
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, classification_report, confusion_matrix
@@ -25,13 +24,13 @@ class app:
 
             if choice == 1:
                 self.load_data()
-            if choice == 2:
+            elif choice == 2:
                 self.train_model()
-            if choice == 3:
+            elif choice == 3:
                 self.evaluate_model()
-            if choice == 4:
+            elif choice == 4:
                 self.simulate()
-            if choice == 5:
+            elif choice == 5:
                 break
             else:
                pass
@@ -89,13 +88,16 @@ class app:
          # encode the strings to numbers for KNN to work
     #creates a coder object 
      self.coders = {} # encoder dictionary 
-     #coder = LabelEncoder()
     # apply it to all the features (aka "X", "o","b") into ints, (1,2,3)
-     coder_features = self.features.copy()
+     coder_features = self.features.copy()   
+     #make sure its a string before encoding
      for col in coder_features.columns:
-        coder = LabelEncoder()
-        coder_features[col] = coder.fit_transform(coder_features[col])
-        self.coders[col] = coder  # store the encoder for each column
+        if coder_features[col].dtype == "object":
+         coder = LabelEncoder()
+         coder_features[col] = coder.fit_transform(coder_features[col])
+         self.coders[col] = coder  # store the encoder for each column
+        else:
+           self.coders[col] = None
     # now apply it to the class too (aka "positive", "negative")
      self.class_coder = LabelEncoder()
      coder_classes = self.class_coder.fit_transform(self.classes)
@@ -155,7 +157,8 @@ class app:
      print ("\n------classification report------")
      print(self.report)
      print ("\n------Confusion Matrix------")
-     print(self.matrix)
+    # cleaner print instead of arrays
+     print(pd.DataFrame(self.matrix,  columns=self.class_coder.classes_, index=self.class_coder.classes_))
 
      save_choice = input("\nDo you want to save these results to a file? (y/n): ").strip().lower()
      if save_choice == "y":
@@ -177,7 +180,7 @@ class app:
       if self.model is None:
         print ("train a model first!!")
         return
-      if self.model == "tic-tac-toe":
+      if self.model == 2:
         print("enter x for player X and o for player O and b for blank")
       else:
         print("enter the feature values")
@@ -191,7 +194,9 @@ class app:
       coder_input = input_df.copy()
       for col in coder_input.columns:
          coder = self.coders[col]
-         coder_input[col] = coder.transform(coder_input[col])
+         if coder is not None:
+          coder_input[col] = coder.transform(coder_input[col])
+         
     # Make prediction
       prediction = self.model.predict(coder_input)
       predicted_class = self.class_coder.inverse_transform(prediction)[0] # decode the predicted class
