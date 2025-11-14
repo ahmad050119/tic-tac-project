@@ -134,7 +134,7 @@ class app:
         print("Invalid choice!")
         return
     
-    # Trains model assifier with the training set obtained previously:
+    # Trains model classifier with the training set obtained previously:
      self.model.fit(strat_feat_train, strat_classes_train)
 
        #Obtains the predictions from the model classifier:
